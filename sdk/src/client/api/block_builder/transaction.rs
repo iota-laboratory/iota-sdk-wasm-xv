@@ -103,7 +103,11 @@ impl<'a> ClientBlockBuilder<'a> {
 
         validate_transaction_payload_length(&tx_payload)?;
 
-        let conflict = verify_semantic(&prepared_transaction_data.inputs_data, &tx_payload, current_time)?;
+        let conflict = verify_semantic(
+            &prepared_transaction_data.inputs_data,
+            tx_payload.essence(),
+            current_time,
+        )?;
 
         if conflict != ConflictReason::None {
             log::debug!("[sign_transaction] conflict: {conflict:?} for {:#?}", tx_payload);
@@ -117,25 +121,18 @@ impl<'a> ClientBlockBuilder<'a> {
 /// Verifies the semantic of a prepared transaction.
 pub fn verify_semantic(
     input_signing_data: &[InputSigningData],
-    transaction: &TransactionPayload,
+    essence: &TransactionEssence,
     current_time: u32,
 ) -> crate::client::Result<ConflictReason> {
-    let transaction_id = transaction.id();
-    let TransactionEssence::Regular(essence) = transaction.essence();
+    let TransactionEssence::Regular(essence) = essence;
     let inputs = input_signing_data
         .iter()
         .map(|input| (input.output_id(), &input.output))
         .collect::<Vec<(&OutputId, &Output)>>();
 
-    let context = ValidationContext::new(
-        &transaction_id,
-        essence,
-        inputs.iter().map(|(id, input)| (*id, *input)),
-        transaction.unlocks(),
-        current_time,
-    );
+    let context = ValidationContext::new(essence, inputs.iter().map(|(id, input)| (*id, *input)), current_time);
 
-    Ok(semantic_validation(context, inputs.as_slice(), transaction.unlocks())?)
+    Ok(semantic_validation(context, inputs.as_slice())?)
 }
 
 /// Verifies that the transaction payload doesn't exceed the block size limit with 8 parents.

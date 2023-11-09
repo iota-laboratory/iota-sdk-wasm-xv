@@ -136,7 +136,7 @@ where
 
         let conflict = verify_semantic(
             &signed_transaction_data.inputs_data,
-            &signed_transaction_data.transaction_payload,
+            signed_transaction_data.transaction_payload.essence(),
             local_time,
         )?;
 

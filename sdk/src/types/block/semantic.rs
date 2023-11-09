@@ -7,11 +7,11 @@ use core::{convert::Infallible, fmt};
 use hashbrown::{HashMap, HashSet};
 use primitive_types::U256;
 
+use super::address::AliasAddress;
 use crate::types::block::{
     address::Address,
     output::{ChainId, FoundryId, InputsCommitment, NativeTokens, Output, OutputId, TokenId},
-    payload::transaction::{RegularTransactionEssence, TransactionEssence, TransactionId},
-    unlock::Unlocks,
+    payload::transaction::{RegularTransactionEssence, TransactionEssence},
     Error,
 };
 
@@ -147,8 +147,6 @@ pub struct ValidationContext<'a> {
     ///
     pub inputs_commitment: InputsCommitment,
     ///
-    pub unlocks: &'a Unlocks,
-    ///
     pub milestone_timestamp: u32,
     ///
     pub input_amount: u64,
@@ -173,15 +171,12 @@ pub struct ValidationContext<'a> {
 impl<'a> ValidationContext<'a> {
     ///
     pub fn new(
-        transaction_id: &TransactionId,
         essence: &'a RegularTransactionEssence,
         inputs: impl Iterator<Item = (&'a OutputId, &'a Output)> + Clone,
-        unlocks: &'a Unlocks,
         milestone_timestamp: u32,
     ) -> Self {
         Self {
             essence,
-            unlocks,
             essence_hash: TransactionEssence::from(essence.clone()).hash(),
             inputs_commitment: InputsCommitment::new(inputs.clone().map(|(_, output)| output)),
             milestone_timestamp,
@@ -200,14 +195,7 @@ impl<'a> ValidationContext<'a> {
                 .outputs()
                 .iter()
                 .enumerate()
-                .filter_map(|(index, output)| {
-                    output.chain_id().map(|chain_id| {
-                        (
-                            chain_id.or_from_output_id(&OutputId::new(*transaction_id, index as u16).unwrap()),
-                            output,
-                        )
-                    })
-                })
+                .filter_map(|(_index, output)| output.chain_id().map(|chain_id| (chain_id, output)))
                 .collect(),
             unlocked_addresses: HashSet::new(),
             storage_deposit_returns: HashMap::new(),
@@ -220,7 +208,6 @@ impl<'a> ValidationContext<'a> {
 pub fn semantic_validation(
     mut context: ValidationContext<'_>,
     inputs: &[(&OutputId, &Output)],
-    unlocks: &Unlocks,
 ) -> Result<ConflictReason, Error> {
     // Validation of the inputs commitment.
     if context.essence.inputs_commitment() != &context.inputs_commitment {
@@ -228,38 +215,45 @@ pub fn semantic_validation(
     }
 
     // Validation of inputs.
-    for ((output_id, consumed_output), unlock) in inputs.iter().zip(unlocks.iter()) {
-        let (conflict, amount, consumed_native_tokens, unlock_conditions) = match consumed_output {
-            Output::Basic(output) => (
-                output.unlock(output_id, unlock, inputs, &mut context),
-                output.amount(),
-                output.native_tokens(),
-                output.unlock_conditions(),
-            ),
-            Output::Alias(output) => (
-                output.unlock(output_id, unlock, inputs, &mut context),
-                output.amount(),
-                output.native_tokens(),
-                output.unlock_conditions(),
-            ),
-            Output::Foundry(output) => (
-                output.unlock(output_id, unlock, inputs, &mut context),
-                output.amount(),
-                output.native_tokens(),
-                output.unlock_conditions(),
-            ),
-            Output::Nft(output) => (
-                output.unlock(output_id, unlock, inputs, &mut context),
-                output.amount(),
-                output.native_tokens(),
-                output.unlock_conditions(),
-            ),
+    for (output_id, consumed_output) in inputs.iter() {
+        match &consumed_output {
+            Output::Basic(_) | Output::Nft(_) => {
+                let unlock_conditions = consumed_output.unlock_conditions().unwrap();
+                let unlocked_address = unlock_conditions.locked_address(
+                    unlock_conditions.address().unwrap().address(),
+                    context.milestone_timestamp,
+                );
+                context.unlocked_addresses.insert(*unlocked_address);
+            }
+            Output::Alias(alias_output) => {
+                let next_state = context
+                    .output_chains
+                    .get(&ChainId::from(alias_output.alias_id_non_null(output_id)));
+
+                if let Some(Output::Alias(next_state)) = next_state {
+                    if alias_output.state_index() == next_state.state_index() {
+                        context.unlocked_addresses.insert(*alias_output.governor_address());
+                    } else {
+                        context
+                            .unlocked_addresses
+                            .insert(*alias_output.state_controller_address());
+                        // Only a state transition can be used to consider the alias address for output unlocks and
+                        // sender/issuer validations.
+                        context
+                            .unlocked_addresses
+                            .insert(Address::from(AliasAddress::from(*next_state.alias_id())));
+                    }
+                };
+            }
+            _ => {}
+        }
+        let (amount, consumed_native_tokens, unlock_conditions) = match consumed_output {
+            Output::Basic(output) => (output.amount(), output.native_tokens(), output.unlock_conditions()),
+            Output::Alias(output) => (output.amount(), output.native_tokens(), output.unlock_conditions()),
+            Output::Foundry(output) => (output.amount(), output.native_tokens(), output.unlock_conditions()),
+            Output::Nft(output) => (output.amount(), output.native_tokens(), output.unlock_conditions()),
             _ => return Err(Error::UnsupportedOutputKind(consumed_output.kind())),
         };
-
-        if let Err(conflict) = conflict {
-            return Ok(conflict);
-        }
 
         if unlock_conditions.is_time_locked(context.milestone_timestamp) {
             return Ok(ConflictReason::TimelockNotExpired);

@@ -17,6 +17,7 @@ import {
     IRent,
     OutputId,
     Bech32Address,
+    InputSigningData,
 } from '../types';
 import { AliasId, BlockId, FoundryId, NftId, TokenId } from '../types/block/id';
 
@@ -419,5 +420,29 @@ export class Utils {
             },
         });
         return hexBytes;
+    }
+
+    /**
+     * Verify semantic without unlocks.
+     *
+     * @param inputs The inputs data.
+     * @param essence The transaction essence.
+     * @param time The unix time for which to do the validation, should be roughly the one of the milestone that will reference the transaction.
+     * @returns The conflict reason.
+     */
+    static verifySemanticWithoutUnlocks(
+        inputs: InputSigningData[],
+        essence: TransactionEssence,
+        time: number,
+    ): string {
+        const conflictReason = callUtilsMethod({
+            name: 'verifySemanticWithoutUnlocks',
+            data: {
+                inputs,
+                essence,
+                time,
+            },
+        });
+        return conflictReason;
     }
 }

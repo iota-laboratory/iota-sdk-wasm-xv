@@ -600,7 +600,7 @@ where
 
     validate_transaction_payload_length(&tx_payload)?;
 
-    let conflict = verify_semantic(&inputs_data, &tx_payload, current_time)?;
+    let conflict = verify_semantic(&inputs_data, tx_payload.essence(), current_time)?;
 
     if conflict != ConflictReason::None {
         log::debug!("[sign_transaction] conflict: {conflict:?} for {:#?}", tx_payload);

@@ -12,6 +12,7 @@ import {
     OutputId,
     NftId,
     Bech32Address,
+    InputSigningData,
 } from '../../';
 import { AliasId } from '../../block/id';
 
@@ -203,5 +204,14 @@ export interface __OutputHexBytes__ {
     name: 'outputHexBytes';
     data: {
         output: Output;
+    };
+}
+
+export interface __VerifySemanticWithoutUnlocks__ {
+    name: 'verifySemanticWithoutUnlocks';
+    data: {
+        inputs: InputSigningData[];
+        essence: TransactionEssence;
+        time: number;
     };
 }

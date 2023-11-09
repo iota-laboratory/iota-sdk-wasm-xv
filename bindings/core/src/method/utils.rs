@@ -2,18 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use derivative::Derivative;
-use iota_sdk::types::block::{
-    address::{Bech32Address, Hrp},
-    output::{dto::OutputDto, AliasId, NftId, OutputId, RentStructure},
-    payload::{
-        dto::MilestonePayloadDto,
-        transaction::{
-            dto::{TransactionEssenceDto, TransactionPayloadDto},
-            TransactionId,
+use iota_sdk::{
+    client::secret::types::InputSigningDataDto,
+    types::block::{
+        address::{Bech32Address, Hrp},
+        output::{dto::OutputDto, AliasId, NftId, OutputId, RentStructure},
+        payload::{
+            dto::MilestonePayloadDto,
+            transaction::{
+                dto::{TransactionEssenceDto, TransactionPayloadDto},
+                TransactionId,
+            },
         },
+        signature::dto::Ed25519SignatureDto,
+        BlockDto,
     },
-    signature::dto::Ed25519SignatureDto,
-    BlockDto,
 };
 use serde::{Deserialize, Serialize};
 
@@ -159,4 +162,11 @@ pub enum UtilsMethod {
     /// Returns the hex representation of the serialized output bytes.
     #[serde(rename_all = "camelCase")]
     OutputHexBytes { output: OutputDto },
+    /// Do semantic validation without unlocks.
+    #[serde(rename_all = "camelCase")]
+    VerifySemanticWithoutUnlocks {
+        inputs: Vec<InputSigningDataDto>,
+        essence: TransactionEssenceDto,
+        time: u32,
+    },
 }
