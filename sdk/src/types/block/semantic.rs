@@ -7,7 +7,7 @@ use core::{convert::Infallible, fmt};
 use hashbrown::{HashMap, HashSet};
 use primitive_types::U256;
 
-use super::address::AliasAddress;
+use super::address::{AliasAddress, NftAddress};
 use crate::types::block::{
     address::Address,
     output::{ChainId, FoundryId, InputsCommitment, NativeTokens, Output, OutputId, TokenId},
@@ -217,13 +217,24 @@ pub fn semantic_validation(
     // Validation of inputs.
     for (output_id, consumed_output) in inputs.iter() {
         match &consumed_output {
-            Output::Basic(_) | Output::Nft(_) => {
+            Output::Basic(_) => {
                 let unlock_conditions = consumed_output.unlock_conditions().unwrap();
                 let unlocked_address = unlock_conditions.locked_address(
                     unlock_conditions.address().unwrap().address(),
                     context.milestone_timestamp,
                 );
                 context.unlocked_addresses.insert(*unlocked_address);
+            }
+            Output::Nft(nft_output) => {
+                let unlock_conditions = consumed_output.unlock_conditions().unwrap();
+                let unlocked_address = unlock_conditions.locked_address(
+                    unlock_conditions.address().unwrap().address(),
+                    context.milestone_timestamp,
+                );
+                context.unlocked_addresses.insert(*unlocked_address);
+                context
+                    .unlocked_addresses
+                    .insert(Address::Nft(NftAddress::new(nft_output.nft_id_non_null(output_id))));
             }
             Output::Alias(alias_output) => {
                 let next_state = context
