@@ -6,7 +6,7 @@ mod secret_manager;
 mod wallet;
 
 use iota_sdk_bindings_core::{
-    call_utils_method as rust_call_utils_method, init_logger as rust_init_logger, Response, UtilsMethod,
+    call_utils_method as rust_call_utils_method, call_utils_method2 as rust_call_utils_method, init_logger as rust_init_logger, Response, UtilsMethod,
 };
 use neon::prelude::*;
 use once_cell::sync::Lazy;
@@ -42,6 +42,7 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
     cx.export_function("initLogger", init_logger)?;
 
     cx.export_function("callUtilsMethodRust", call_utils_method)?;
+    cx.export_function("callUtilsMethod2Rust", call_utils_method2)?;
 
     // Client
     cx.export_function("callClientMethod", client::call_client_method)?;

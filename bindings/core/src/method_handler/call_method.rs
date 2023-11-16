@@ -14,11 +14,11 @@ use crate::{
     method::{ClientMethod, SecretManagerMethod, WalletMethod},
     method_handler::{
         client::call_client_method_internal, secret_manager::call_secret_manager_method_internal,
-        utils::call_utils_method_internal, wallet::call_wallet_method_internal,
+        utils::call_utils_method_internal, utils::call_utils_method2_internal, wallet::call_wallet_method_internal,
     },
     panic::{convert_async_panics, convert_panics},
     response::Response,
-    UtilsMethod,
+    UtilsMethod, UtilsMethod2,
 };
 
 pub trait CallMethod {
@@ -74,6 +74,17 @@ pub fn call_utils_method(method: UtilsMethod) -> Response {
     let response = result.unwrap_or_else(Response::Error);
 
     log::debug!("Utils response: {response:?}");
+    response
+}
+
+/// Call a utils method.
+pub fn call_utils_method2(method: UtilsMethod2) -> Response {
+    log::debug!("Utils2 method: {method:?}");
+    let result = convert_panics(|| call_utils_method2_internal(method));
+
+    let response = result.unwrap_or_else(Response::Error);
+
+    log::debug!("Utils2 response: {response:?}");
     response
 }
 

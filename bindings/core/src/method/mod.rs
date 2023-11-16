@@ -8,6 +8,6 @@ mod utils;
 mod wallet;
 
 pub use self::{
-    account::AccountMethod, client::ClientMethod, secret_manager::SecretManagerMethod, utils::UtilsMethod,
+    account::AccountMethod, client::ClientMethod, secret_manager::SecretManagerMethod, utils::UtilsMethod, utils::UtilsMethod2,
     wallet::WalletMethod,
 };

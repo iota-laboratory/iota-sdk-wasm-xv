@@ -1,7 +1,7 @@
 // Copyright 2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { callUtilsMethod } from '../bindings';
+import { callUtilsMethod, callUtilsMethod2 } from '../bindings';
 import {
     Address,
     HexEncodedString,
@@ -435,7 +435,7 @@ export class Utils {
         essence: TransactionEssence,
         time: number,
     ): string {
-        const conflictReason = callUtilsMethod({
+        const conflictReason = callUtilsMethod2({
             name: 'verifySemanticWithoutUnlocks',
             data: {
                 inputs,

@@ -162,6 +162,12 @@ pub enum UtilsMethod {
     /// Returns the hex representation of the serialized output bytes.
     #[serde(rename_all = "camelCase")]
     OutputHexBytes { output: OutputDto },
+}
+#[derive(Clone, Derivative, Serialize, Deserialize)]
+#[derivative(Debug)]
+#[serde(tag = "name", content = "data", rename_all = "camelCase")]
+#[non_exhaustive]
+pub enum UtilsMethod2 {
     /// Do semantic validation without unlocks.
     #[serde(rename_all = "camelCase")]
     VerifySemanticWithoutUnlocks {

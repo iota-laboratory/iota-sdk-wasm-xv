@@ -54,5 +54,7 @@ export type __UtilsMethods__ =
     | __VerifyMnemonicMethod__
     | __FaucetMethod__
     | __OutputIdToUtxoInput__
-    | __OutputHexBytes__
+    | __OutputHexBytes__;
+
+export type __UtilsMethods2__ =
     | __VerifySemanticWithoutUnlocks__;

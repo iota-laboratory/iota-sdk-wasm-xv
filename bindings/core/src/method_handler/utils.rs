@@ -21,7 +21,7 @@ use iota_sdk::{
 };
 use packable::PackableExt;
 
-use crate::{method::UtilsMethod, response::Response, Result};
+use crate::{method::{UtilsMethod, UtilsMethod2}, response::Response, Result};
 
 /// Call a utils method.
 pub(crate) fn call_utils_method_internal(method: UtilsMethod) -> Result<Response> {
@@ -117,7 +117,13 @@ pub(crate) fn call_utils_method_internal(method: UtilsMethod) -> Result<Response
             let output = Output::try_from_dto(output)?;
             Response::HexBytes(prefix_hex::encode(output.pack_to_vec()))
         }
-        UtilsMethod::VerifySemanticWithoutUnlocks { inputs, essence, time } => {
+    };
+    Ok(response)
+}
+
+pub(crate) fn call_utils_method2_internal(method: UtilsMethod2) -> Result<Response> {
+    let response = match method {
+        UtilsMethod2::VerifySemanticWithoutUnlocks { inputs, essence, time } => {
             let conflict = verify_semantic(
                 &inputs
                     .into_iter()

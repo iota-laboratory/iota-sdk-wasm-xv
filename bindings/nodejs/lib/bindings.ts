@@ -4,7 +4,7 @@
 import type { WalletEventType } from './types/wallet';
 import { Event } from './types/wallet';
 import type { WalletMethodHandler } from './wallet/wallet-method-handler';
-import { __UtilsMethods__ } from './types/utils';
+import { __UtilsMethods__, __UtilsMethods2__ } from './types/utils';
 import type { SecretManagerMethodHandler } from './secret_manager/secret-manager-method-handler';
 import type { ClientMethodHandler } from './client/client-method-handler';
 
@@ -64,6 +64,15 @@ const callSecretManagerMethodAsync = (
 
 const callUtilsMethod = (method: __UtilsMethods__): any => {
     const response = JSON.parse(callUtilsMethodRust(JSON.stringify(method)));
+    if (response.type == 'error' || response.type == 'panic') {
+        throw response;
+    } else {
+        return response.payload;
+    }
+};
+
+const callUtilsMethod2 = (method: __UtilsMethods2__): any => {
+    const response = JSON.parse(callUtilsMethod2Rust(JSON.stringify(method)));
     if (response.type == 'error' || response.type == 'panic') {
         throw response;
     } else {
