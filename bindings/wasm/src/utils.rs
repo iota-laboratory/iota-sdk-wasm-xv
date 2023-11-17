@@ -7,9 +7,9 @@ use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 /// Handles a method, returns the response as a JSON-encoded string.
 ///
 /// Returns an error if the response itself is an error or panic.
-#[wasm_bindgen(js_name = callUtilsMethodRust)]
+//#[wasm_bindgen(js_name = callUtilsMethodRust)]
 #[allow(non_snake_case)]
-pub fn call_utils_method(method: String) -> Result<JsValue, JsValue> {
+fn call_utils_method(method: String) -> Result<JsValue, JsValue> {
     let method: UtilsMethod = serde_json::from_str(&method).map_err(|err| err.to_string())?;
     let response = rust_call_utils_method(method);
     Ok(JsValue::from(

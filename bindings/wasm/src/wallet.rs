@@ -20,15 +20,15 @@ use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 use crate::{client::ClientMethodHandler, secret_manager::SecretManagerMethodHandler};
 
 /// The Wallet method handler.
-#[wasm_bindgen(js_name = WalletMethodHandler)]
-pub struct WalletMethodHandler {
+//#[wasm_bindgen(js_name = WalletMethodHandler)]
+pub(crate) struct WalletMethodHandler {
     wallet: Arc<Mutex<Option<Wallet>>>,
 }
 
 /// Creates a method handler with the given options.
-#[wasm_bindgen(js_name = createWallet)]
+//#[wasm_bindgen(js_name = createWallet)]
 #[allow(non_snake_case)]
-pub fn create_wallet(options: String) -> Result<WalletMethodHandler, JsValue> {
+fn create_wallet(options: String) -> Result<WalletMethodHandler, JsValue> {
     let wallet_options = serde_json::from_str::<WalletOptions>(&options).map_err(|e| e.to_string())?;
 
     let wallet_method_handler = tokio::runtime::Builder::new_current_thread()
@@ -42,14 +42,14 @@ pub fn create_wallet(options: String) -> Result<WalletMethodHandler, JsValue> {
     })
 }
 
-#[wasm_bindgen(js_name = destroyWallet)]
-pub async fn destroy_wallet(method_handler: &WalletMethodHandler) -> Result<(), JsValue> {
+//#[wasm_bindgen(js_name = destroyWallet)]
+async fn destroy_wallet(method_handler: &WalletMethodHandler) -> Result<(), JsValue> {
     *method_handler.wallet.lock().await = None;
     Ok(())
 }
 
-#[wasm_bindgen(js_name = getClientFromWallet)]
-pub async fn get_client(method_handler: &WalletMethodHandler) -> Result<ClientMethodHandler, JsValue> {
+//#[wasm_bindgen(js_name = getClientFromWallet)]
+async fn get_client(method_handler: &WalletMethodHandler) -> Result<ClientMethodHandler, JsValue> {
     let client = method_handler
         .wallet
         .lock()
@@ -62,8 +62,8 @@ pub async fn get_client(method_handler: &WalletMethodHandler) -> Result<ClientMe
     Ok(ClientMethodHandler { client })
 }
 
-#[wasm_bindgen(js_name = getSecretManagerFromWallet)]
-pub async fn get_secret_manager(method_handler: &WalletMethodHandler) -> Result<SecretManagerMethodHandler, JsValue> {
+//#[wasm_bindgen(js_name = getSecretManagerFromWallet)]
+async fn get_secret_manager(method_handler: &WalletMethodHandler) -> Result<SecretManagerMethodHandler, JsValue> {
     let secret_manager = method_handler
         .wallet
         .lock()
@@ -79,8 +79,8 @@ pub async fn get_secret_manager(method_handler: &WalletMethodHandler) -> Result<
 /// Handles a method, returns the response as a JSON-encoded string.
 ///
 /// Returns an error if the response itself is an error or panic.
-#[wasm_bindgen(js_name = callWalletMethodAsync)]
-pub async fn call_wallet_method_async(method: String, method_handler: &WalletMethodHandler) -> Result<String, JsValue> {
+//#[wasm_bindgen(js_name = callWalletMethodAsync)]
+async fn call_wallet_method_async(method: String, method_handler: &WalletMethodHandler) -> Result<String, JsValue> {
     let method: WalletMethod = serde_json::from_str(&method).map_err(|err| err.to_string())?;
 
     let response = call_wallet_method(
@@ -109,8 +109,8 @@ pub async fn call_wallet_method_async(method: String, method_handler: &WalletMet
 /// * `vec`: An array of strings that represent the event types you want to listen to.
 /// * `callback`: A JavaScript function that will be called when a wallet event occurs.
 /// * `method_handler`: This is the same method handler that we used in the previous section.
-#[wasm_bindgen(js_name = listenWalletAsync)]
-pub async fn listen_wallet(
+//#[wasm_bindgen(js_name = listenWalletAsync)]
+async fn listen_wallet(
     vec: js_sys::Array,
     callback: js_sys::Function,
     method_handler: &WalletMethodHandler,
@@ -157,8 +157,8 @@ pub async fn listen_wallet(
 ///
 /// Throws an error if called, only included for compatibility
 /// with the Node.js bindings TypeScript definitions.
-#[wasm_bindgen(js_name = migrateDbChrysalisToStardust)]
-pub fn migrate_db_chrysalis_to_stardust(_storage_path: String, _password: Option<String>) -> Result<(), JsValue> {
+//#[wasm_bindgen(js_name = migrateDbChrysalisToStardust)]
+fn migrate_db_chrysalis_to_stardust(_storage_path: String, _password: Option<String>) -> Result<(), JsValue> {
     let js_error = js_sys::Error::new("Rocksdb chrysalis migration is not supported for WebAssembly");
 
     Err(JsValue::from(js_error))

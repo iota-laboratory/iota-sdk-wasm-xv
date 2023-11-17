@@ -15,15 +15,15 @@ use wasm_bindgen_futures::future_to_promise;
 use crate::PromiseString;
 
 /// The SecretManager method handler.
-#[wasm_bindgen(js_name = SecretManagerMethodHandler)]
-pub struct SecretManagerMethodHandler {
+//#[wasm_bindgen(js_name = SecretManagerMethodHandler)]
+pub(crate) struct SecretManagerMethodHandler {
     pub(crate) secret_manager: Arc<RwLock<SecretManager>>,
 }
 
 /// Creates a method handler with the given secret_manager options.
-#[wasm_bindgen(js_name = createSecretManager)]
+//#[wasm_bindgen(js_name = createSecretManager)]
 #[allow(non_snake_case)]
-pub fn create_secret_manager(options: String) -> Result<SecretManagerMethodHandler, JsValue> {
+fn create_secret_manager(options: String) -> Result<SecretManagerMethodHandler, JsValue> {
     let secret_manager_dto = serde_json::from_str::<SecretManagerDto>(&options).map_err(|err| err.to_string())?;
     let secret_manager = SecretManager::try_from(secret_manager_dto).map_err(|err| err.to_string())?;
 
@@ -35,9 +35,9 @@ pub fn create_secret_manager(options: String) -> Result<SecretManagerMethodHandl
 /// Handles a method, returns the response as a JSON-encoded string.
 ///
 /// Returns an error if the response itself is an error or panic.
-#[wasm_bindgen(js_name = callSecretManagerMethodAsync)]
+//#[wasm_bindgen(js_name = callSecretManagerMethodAsync)]
 #[allow(non_snake_case)]
-pub fn call_secret_manager_method_async(
+fn call_secret_manager_method_async(
     method: String,
     methodHandler: &SecretManagerMethodHandler,
 ) -> Result<PromiseString, JsValue> {
@@ -61,8 +61,8 @@ pub fn call_secret_manager_method_async(
 ///
 /// Throws an error if called, only included for compatibility
 /// with the Node.js bindings TypeScript definitions.
-#[wasm_bindgen(js_name = migrateStrongholdSnapshotV2ToV3)]
-pub fn migrate_stronghold_snapshot_v2_to_v3(
+//#[wasm_bindgen(js_name = migrateStrongholdSnapshotV2ToV3)]
+fn migrate_stronghold_snapshot_v2_to_v3(
     _current_path: String,
     _current_password: String,
     _salt: &str,

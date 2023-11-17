@@ -12,15 +12,15 @@ use wasm_bindgen_futures::future_to_promise;
 use crate::{ArrayString, PromiseString};
 
 /// The Client method handler.
-#[wasm_bindgen(js_name = ClientMethodHandler)]
-pub struct ClientMethodHandler {
+//#[wasm_bindgen(js_name = ClientMethodHandler)]
+pub(crate) struct ClientMethodHandler {
     pub(crate) client: Client,
 }
 
 /// Creates a method handler with the given client options.
-#[wasm_bindgen(js_name = createClient)]
+//#[wasm_bindgen(js_name = createClient)]
 #[allow(non_snake_case)]
-pub fn create_client(clientOptions: String) -> Result<ClientMethodHandler, JsValue> {
+fn create_client(clientOptions: String) -> Result<ClientMethodHandler, JsValue> {
     let runtime = tokio::runtime::Builder::new_current_thread()
         .build()
         .map_err(|err| err.to_string())?;
@@ -38,17 +38,17 @@ pub fn create_client(clientOptions: String) -> Result<ClientMethodHandler, JsVal
 }
 
 /// Necessary for compatibility with the node.js bindings.
-#[wasm_bindgen(js_name = destroyClient)]
-pub async fn destroy_client(_client_method_handler: &ClientMethodHandler) -> Result<(), JsValue> {
+//#[wasm_bindgen(js_name = destroyClient)]
+async fn destroy_client(_client_method_handler: &ClientMethodHandler) -> Result<(), JsValue> {
     Ok(())
 }
 
 /// Handles a method, returns the response as a JSON-encoded string.
 ///
 /// Returns an error if the response itself is an error or panic.
-#[wasm_bindgen(js_name = callClientMethodAsync)]
+//#[wasm_bindgen(js_name = callClientMethodAsync)]
 #[allow(non_snake_case)]
-pub fn call_client_method_async(method: String, methodHandler: &ClientMethodHandler) -> Result<PromiseString, JsValue> {
+fn call_client_method_async(method: String, methodHandler: &ClientMethodHandler) -> Result<PromiseString, JsValue> {
     let client: Client = methodHandler.client.clone();
 
     let promise: js_sys::Promise = future_to_promise(async move {
@@ -70,8 +70,8 @@ pub fn call_client_method_async(method: String, methodHandler: &ClientMethodHand
 ///
 /// Throws an error if called, only included for compatibility
 /// with the Node.js bindings TypeScript definitions.
-#[wasm_bindgen(js_name = listenMqtt)]
-pub fn listen_mqtt(_topics: ArrayString, _callback: &js_sys::Function) -> Result<(), JsValue> {
+//#[wasm_bindgen(js_name = listenMqtt)]
+fn listen_mqtt(_topics: ArrayString, _callback: &js_sys::Function) -> Result<(), JsValue> {
     let js_error = js_sys::Error::new("Client MQTT not supported for WebAssembly");
 
     Err(JsValue::from(js_error))

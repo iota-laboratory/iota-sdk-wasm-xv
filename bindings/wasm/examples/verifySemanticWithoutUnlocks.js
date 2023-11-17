@@ -6,6 +6,8 @@ const { Client, Utils, UTXOInput } = require('../node/lib');
 
 async function run() {
     try {
+		Utils.verifySemanticWithoutUnlocks([],{},0);
+		/*
 		let apiClient = new Client({ nodes: [process.argv[2] || "https://api.testnet.shimmer.network/"] });
 		let blockidqueue = [];
 		let milestoneTimestamps = {};
@@ -38,6 +40,7 @@ async function run() {
 			let reason = Utils.verifySemanticWithoutUnlocks(utxoInputsData, block.payload.essence, timestamp);
 			console.log(blockid, reason);
 		}
+		*/
     } catch (e) {
         console.error(e)
     }
